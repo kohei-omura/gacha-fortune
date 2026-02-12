@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ガチャ占い - 全占術統合システム</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Zen+Maru+Gothic:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B4789;
+            --secondary: #E6D5E8;
+            --accent: #FFD700;
+            --dark: #2C1B3D;
+            --light: #FAF7FB;
+            --text: #3D2645;
+        }
+
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background: linear-gradient(135deg, #1e1140 0%, #3d2463 50%, #1e1140 100%);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(139, 71, 137, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            letter-spacing: 0.05em;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--secondary);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 215, 0, 0.1);
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-family: 'Noto Serif JP', serif;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--secondary);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 71, 137, 0.1);
+        }
+
+        .optional {
+            font-size: 0.85rem;
+            color: #999;
+            font-weight: 400;
+            margin-left: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), #6B3567);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Noto Serif JP', serif;
+            letter-spacing: 0.05em;
+            box-shadow: 0 10px 30px rgba(139, 71, 137, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(139, 71, 137, 0.4);
+        }
+
+        .result {
+            display: none;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .lucky-time {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .lucky-time h2 {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .time-slot {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .time-slot h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .time-slot p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Noto Serif JP', serif;
+        }
+
+        .score {
+            display: inline-block;
+            background: white;
+            color: var(--primary);
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .divination-section {
+            background: var(--light);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .divination-section h3 {
+            font-family: 'Noto Serif JP', serif;
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .divination-section p {
+            line-height: 1.8;
+            color: var(--text);
+        }
+
+        .lucky-action {
+            background: linear-gradient(135deg, var(--secondary), #D4BDD6);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .lucky-action h3 {
+            font-family: 'Noto Serif JP', serif;
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .lucky-action ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .lucky-action li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .lucky-action li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+            top: 10px;
+        }
+
+        .download-pdf-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Noto Serif JP', serif;
+            letter-spacing: 0.05em;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-pdf-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .download-pdf-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .download-pdf-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+        }
+
+        .lucky-girl {
+            text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 1.5s ease-out;
+        }
+
+        .lucky-girl img {
+            max-width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(139, 71, 137, 0.3);
+            border: 5px solid var(--accent);
+        }
+
+        .lucky-girl h3 {
+            font-family: 'Noto Serif JP', serif;
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin: 20px 0 10px;
+            font-weight: 700;
+        }
+
+        .lucky-girl p {
+            color: var(--text);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(139, 71, 137, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            .lucky-time h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <header>
+            <h1>🔮 ガチャ占い</h1>
+            <p class="subtitle">全占術統合システム by クトちゃん</p>
+        </header>
+
+        <div class="card">
+            <form id="fortuneForm">
+                <div class="form-group">
+                    <label for="gameTitle">ゲームタイトル</label>
+                    <select id="gameTitle" required>
+                        <option value="">選択してください</option>
+                        <option value="ウマ娘">ウマ娘 プリティーダービー</option>
+                        <option value="ブルアカ">ブルーアーカイブ</option>
+                        <option value="原神">原神</option>
+                        <option value="NIKKE">勝利の女神：NIKKE</option>
+                        <option value="崩壊スターレイル">崩壊：スターレイル</option>
+                        <option value="鳴潮">鳴潮</option>
+                        <option value="Fate/GO">Fate/Grand Order</option>
+                        <option value="プリコネR">プリンセスコネクト！Re:Dive</option>
+                        <option value="グラブル">グランブルーファンタジー</option>
+                        <option value="アズールレーン">アズールレーン</option>
+                        <option value="ヘブバン">ヘブンバーンズレッド</option>
+                        <option value="DQウォーク">ドラゴンクエストウォーク</option>
+                        <option value="白猫">白猫プロジェクト</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="customGameGroup" style="display: none;">
+                    <label for="customGame">ゲームタイトルを入力</label>
+                    <input type="text" id="customGame" placeholder="例: モンスターストライク">
+                </div>
+
+                <div class="form-group">
+                    <label for="targetName">狙っているキャラ/武器名 <span class="optional">(任意)</span></label>
+                    <input type="text" id="targetName" placeholder="例: 高坂麗奈、草薙の剣">
+                </div>
+
+                <div class="form-group">
+                    <label for="gachaTitle">ガチャタイトル <span class="optional">(任意)</span></label>
+                    <input type="text" id="gachaTitle" placeholder="例: 響け!ユーフォニアムコラボ、正月ガチャ">
+                </div>
+
+                <div class="form-group">
+                    <label for="gachaDeadline">ガチャ期限（日付） <span class="optional">(任意)</span></label>
+                    <input type="date" id="gachaDeadline" min="">
+                </div>
+
+                <div class="form-group">
+                    <label for="gachaDeadlineTime">ガチャ期限（時刻） <span class="optional">(任意)</span></label>
+                    <input type="time" id="gachaDeadlineTime" value="23:59">
+                </div>
+
+                <div class="form-group">
+                    <label for="birthdate">生年月日 <span class="optional">(任意)</span></label>
+                    <input type="date" id="birthdate" max="2010-12-31">
+                </div>
+
+                <div class="form-group">
+                    <label for="zodiac">星座 <span class="optional">(任意)</span></label>
+                    <select id="zodiac">
+                        <option value="">選択してください</option>
+                        <option value="牡羊座">牡羊座</option>
+                        <option value="牡牛座">牡牛座</option>
+                        <option value="双子座">双子座</option>
+                        <option value="蟹座">蟹座</option>
+                        <option value="獅子座">獅子座</option>
+                        <option value="乙女座">乙女座</option>
+                        <option value="天秤座">天秤座</option>
+                        <option value="蠍座">蠍座</option>
+                        <option value="射手座">射手座</option>
+                        <option value="山羊座">山羊座</option>
+                        <option value="水瓶座">水瓶座</option>
+                        <option value="魚座">魚座</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bloodType">血液型 <span class="optional">(任意)</span></label>
+                    <select id="bloodType">
+                        <option value="">選択してください</option>
+                        <option value="A型">A型</option>
+                        <option value="B型">B型</option>
+                        <option value="O型">O型</option>
+                        <option value="AB型">AB型</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="eto">干支 <span class="optional">(任意)</span></label>
+                    <select id="eto">
+                        <option value="">選択してください</option>
+                        <option value="子">子（ねずみ）</option>
+                        <option value="丑">丑（うし）</option>
+                        <option value="寅">寅（とら）</option>
+                        <option value="卯">卯（うさぎ）</option>
+                        <option value="辰">辰（たつ）</option>
+                        <option value="巳">巳（へび）</option>
+                        <option value="午">午（うま）</option>
+                        <option value="未">未（ひつじ）</option>
+                        <option value="申">申（さる）</option>
+                        <option value="酉">酉（とり）</option>
+                        <option value="戌">戌（いぬ）</option>
+                        <option value="亥">亥（いのしし）</option>
+                    </select>
+                </div>
+
+                <button type="submit">✨ 占う ✨</button>
+            </form>
+        </div>
+
+        <div class="card loading" id="loading">
+            <div class="spinner"></div>
+            <p style="text-align: center; color: var(--primary); font-size: 1.2rem;">占い中...</p>
+        </div>
+
+        <div class="card result" id="result">
+            <!-- 結果がここに表示されます -->
+        </div>
+
+        <footer>
+            <p>Powered by クトちゃん 💫 全占術統合システム</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">西洋占星術・数秘術・タロット・四柱推命・九星気学・血液型占いを統合</p>
+        </footer>
+    </div>
+
+    <script>
+        // 星を生成
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        createStars();
+
+        // ガチャ期限の最小値を今日に設定
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('gachaDeadline').min = today;
+
+        // ゲームタイトル選択時の処理
+        document.getElementById('gameTitle').addEventListener('change', function() {
+            const customGameGroup = document.getElementById('customGameGroup');
+            const customGameInput = document.getElementById('customGame');
+            
+            if (this.value === 'その他') {
+                customGameGroup.style.display = 'block';
+                customGameInput.required = true;
+            } else {
+                customGameGroup.style.display = 'none';
+                customGameInput.required = false;
+                customGameInput.value = '';
+            }
+        });
+
+        // フォーム送信処理
+        document.getElementById('fortuneForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let gameTitle = document.getElementById('gameTitle').value;
+            if (gameTitle === 'その他') {
+                gameTitle = document.getElementById('customGame').value;
+            }
+            
+            const targetName = document.getElementById('targetName').value;
+            const gachaTitle = document.getElementById('gachaTitle').value;
+            const gachaDeadline = document.getElementById('gachaDeadline').value;
+            const gachaDeadlineTime = document.getElementById('gachaDeadlineTime').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const zodiac = document.getElementById('zodiac').value;
+            const bloodType = document.getElementById('bloodType').value;
+            const eto = document.getElementById('eto').value;
+
+            // ローディング表示
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('result').classList.remove('show');
+
+            // 占い計算（模擬的に2秒後に結果表示）
+            setTimeout(() => {
+                const result = calculateFortune(gameTitle, targetName, gachaTitle, gachaDeadline, gachaDeadlineTime, birthdate, zodiac, bloodType, eto);
+                displayResult(result);
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('result').classList.add('show');
+                
+                // 結果までスクロール
+                document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 2000);
+        });
+
+        function calculateFortune(gameTitle, targetName, gachaTitle, gachaDeadline, gachaDeadlineTime, birthdate, zodiac, bloodType, eto) {
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+
+            // 固定された結果があるかチェック
+            const savedKey = `${gameTitle}_${targetName}_${gachaTitle}_${gachaDeadline}`;
+            const fixedResult = localStorage.getItem('fixedGachaResult');
+            const fixedResultKey = localStorage.getItem('fixedGachaResultKey');
+            
+            if (fixedResult && fixedResultKey === savedKey) {
+                // 固定された結果を返す
+                return JSON.parse(fixedResult);
+            }
+
+            // 基本スコア計算（ランダム要素を含む）
+            let baseScore = 70 + Math.floor(Math.random() * 20);
+
+            // 生年月日による補正
+            if (birthdate) {
+                const birth = new Date(birthdate);
+                const birthDay = birth.getDate();
+                baseScore += (birthDay % 10);
+            }
+
+            // 星座による補正
+            if (zodiac) {
+                const zodiacBonus = {
+                    '牡羊座': 5, '牡牛座': 3, '双子座': 7, '蟹座': 4,
+                    '獅子座': 6, '乙女座': 5, '天秤座': 4, '蠍座': 8,
+                    '射手座': 7, '山羊座': 5, '水瓶座': 6, '魚座': 4
+                };
+                baseScore += (zodiacBonus[zodiac] || 0);
+            }
+
+            // 血液型による補正
+            if (bloodType) {
+                const bloodBonus = { 'A型': 3, 'B型': 5, 'O型': 4, 'AB型': 6 };
+                baseScore += (bloodBonus[bloodType] || 0);
+            }
+
+            // ターゲット名による補正（名前の文字数で運気が変動）
+            let targetBonus = 0;
+            if (targetName) {
+                targetBonus = (targetName.length % 5) + 3;
+                baseScore += targetBonus;
+            }
+
+            // ガチャタイトルによる補正
+            if (gachaTitle) {
+                baseScore += 2;
+            }
+
+            // 最終スコア調整
+            baseScore = Math.min(100, baseScore);
+
+            // 推奨ガチャ回数を計算
+            const recommendedPulls = calculateRecommendedPulls(baseScore, targetName);
+
+            // ラッキータイム生成（期限と時刻を考慮）
+            const luckyTimes = generateLuckyTimes(currentMonth, baseScore, targetName, gachaDeadline, gachaDeadlineTime);
+
+            // 占術別解説生成
+            const divinations = generateDivinations(gameTitle, targetName, gachaTitle, zodiac, bloodType, eto, baseScore);
+
+            // ラッキーアクション生成
+            const luckyActions = generateLuckyActions(baseScore, targetName, gachaTitle);
+
+            const result = {
+                gameTitle,
+                targetName,
+                gachaTitle,
+                gachaDeadline,
+                gachaDeadlineTime,
+                score: baseScore,
+                recommendedPulls,
+                luckyTimes,
+                divinations,
+                luckyActions,
+                timestamp: now.getTime()
+            };
+
+            // 結果をローカルストレージに保存（固定用）
+            localStorage.setItem('lastGachaFortune', JSON.stringify(result));
+            localStorage.setItem('fixedGachaResult', JSON.stringify(result));
+            localStorage.setItem('fixedGachaResultKey', savedKey);
+
+            return result;
+        }
+
+        function calculateRecommendedPulls(score, targetName) {
+            let pulls = {
+                single: 0,
+                ten: 0,
+                total: 0
+            };
+
+            if (score >= 90) {
+                pulls.single = Math.floor(Math.random() * 3) + 1; // 1-3回
+                pulls.ten = Math.floor(Math.random() * 2) + 2; // 2-3回
+            } else if (score >= 80) {
+                pulls.single = Math.floor(Math.random() * 2) + 1; // 1-2回
+                pulls.ten = Math.floor(Math.random() * 2) + 2; // 2-3回
+            } else if (score >= 70) {
+                pulls.single = Math.floor(Math.random() * 2); // 0-1回
+                pulls.ten = Math.floor(Math.random() * 2) + 1; // 1-2回
+            } else {
+                pulls.single = 0;
+                pulls.ten = 1;
+            }
+
+            // ターゲット名がある場合は回数を調整
+            if (targetName) {
+                pulls.ten += 1;
+            }
+
+            pulls.total = pulls.single + (pulls.ten * 10);
+
+            return pulls;
+        }
+
+        function generateLuckyTimes(month, score, targetName, deadline, deadlineTime) {
+            const times = [];
+            const now = new Date();
+            const today = now.getDate();
+            
+            // 期限が設定されている場合（時刻も考慮）
+            if (deadline) {
+                let deadlineDate = new Date(deadline);
+                
+                // 時刻が指定されている場合
+                if (deadlineTime) {
+                    const [hours, minutes] = deadlineTime.split(':');
+                    deadlineDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                } else {
+                    deadlineDate.setHours(23, 59, 59, 999);
+                }
+                
+                const diffTime = deadlineDate - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+                
+                if (diffHours <= 0) {
+                    // 期限切れの場合、今の時間以降から5つ生成
+                    for (let i = 0; i < 5; i++) {
+                        const hour = (now.getHours() + i + 1) % 24;
+                        const endHour = (hour + 2) % 24;
+                        
+                        times.push({
+                            rank: i + 1,
+                            date: `${month}月${today}日`,
+                            time: `${hour}:00 - ${endHour}:00`,
+                            score: score - (i * 3),
+                            special: targetName && i === 0,
+                            urgent: true,
+                            passed: false
+                        });
+                    }
+                } else if (diffHours <= 24) {
+                    // 24時間以内の場合
+                    const hoursAvailable = Math.min(diffHours, 24);
+                    const interval = Math.max(1, Math.floor(hoursAvailable / 5));
+                    
+                    for (let i = 0; i < 5; i++) {
+                        const futureTime = new Date(now.getTime() + (interval * i + 1) * 60 * 60 * 1000);
+                        if (futureTime > deadlineDate) break;
+                        
+                        const targetMonth = futureTime.getMonth() + 1;
+                        const targetDay = futureTime.getDate();
+                        const hour = futureTime.getHours();
+                        const endHour = (hour + 2) % 24;
+                        
+                        times.push({
+                            rank: i + 1,
+                            date: `${targetMonth}月${targetDay}日`,
+                            time: `${hour}:00 - ${endHour}:00`,
+                            score: score - (i * 3),
+                            special: targetName && i === 0,
+                            urgent: i === 0,
+                            passed: false
+                        });
+                    }
+                } else {
+                    // 3日以上ある場合、期限内から5つ選定
+                    const interval = Math.max(1, Math.floor(diffDays / 5));
+                    
+                    for (let i = 0; i < 5; i++) {
+                        let targetDay = new Date(now);
+                        targetDay.setDate(targetDay.getDate() + (interval * i) + Math.floor(Math.random() * Math.max(1, interval)));
+                        
+                        // 期限を超えないように調整
+                        if (targetDay > deadlineDate) {
+                            targetDay = new Date(deadlineDate);
+                            targetDay.setHours(targetDay.getHours() - (i * 2));
+                        }
+                        
+                        // 過去にならないようにチェック
+                        if (targetDay < now) {
+                            targetDay = new Date(now);
+                            targetDay.setHours(now.getHours() + i + 1);
+                        }
+                        
+                        const targetMonth = targetDay.getMonth() + 1;
+                        const targetDayNum = targetDay.getDate();
+                        
+                        const hour = targetDay.getHours();
+                        const endHour = (hour + 2) % 24;
+                        
+                        let timeScore = score - (i * 3);
+                        if (targetName && i === 0) {
+                            timeScore += 3;
+                        }
+                        
+                        times.push({
+                            rank: i + 1,
+                            date: `${targetMonth}月${targetDayNum}日`,
+                            time: `${hour}:00 - ${endHour}:00`,
+                            score: timeScore,
+                            special: targetName && i === 0,
+                            urgent: false,
+                            passed: false
+                        });
+                    }
+                }
+            } else {
+                // 期限が設定されていない場合（未来の日付から5つ生成）
+                const daysInMonth = new Date(now.getFullYear(), month, 0).getDate();
+                
+                for (let i = 0; i < 5; i++) {
+                    let day = today + Math.floor(Math.random() * 14) + 1;
+                    if (day > daysInMonth) day = day - daysInMonth;
+                    
+                    const hour = Math.floor(Math.random() * 24);
+                    const endHour = (hour + 2) % 24;
+                    
+                    let timeScore = score - (i * 3);
+                    if (targetName && i === 0) {
+                        timeScore += 3;
+                    }
+                    
+                    times.push({
+                        rank: i + 1,
+                        date: `${month}月${day}日`,
+                        time: `${hour}:00 - ${endHour}:00`,
+                        score: timeScore,
+                        special: targetName && i === 0,
+                        urgent: false,
+                        passed: false
+                    });
+                }
+            }
+            
+            return times;
+        }
+
+        function generateDivinations(gameTitle, targetName, gachaTitle, zodiac, bloodType, eto, score) {
+            const divinations = [];
+
+            // 西洋占星術
+            let astrology = `${zodiac || '星座情報なし'}の方は、`;
+            if (score >= 85) {
+                astrology += '現在、幸運の星が強く輝いています。金星と木星の良い配置により、ガチャ運が最高潮に達しています。';
+            } else if (score >= 70) {
+                astrology += '運気は安定しており、月の影響で直感が冴えています。タイミングを見極めることが重要です。';
+            } else {
+                astrology += '運気は穏やかですが、水星の逆行により慎重さが必要です。焦らずチャンスを待ちましょう。';
+            }
+            
+            if (gachaTitle && targetName) {
+                astrology += `「${gachaTitle}」での「${targetName}」との縁は、第1候補の時間帯に最も強まります。`;
+            } else if (targetName) {
+                astrology += `特に「${targetName}」との縁は、第1候補の時間帯に強まります。`;
+            } else if (gachaTitle) {
+                astrology += `「${gachaTitle}」の期間は、運命の星の配置が良好です。`;
+            }
+            
+            divinations.push({ title: '🌟 西洋占星術', content: astrology });
+
+            // 数秘術
+            let numerology = `ゲーム「${gameTitle}」の数値波動を分析すると、今月はエネルギー値が高く、特に${generateLuckyNumber()}の数字が幸運を呼びます。`;
+            
+            if (gachaTitle) {
+                const titleLength = gachaTitle.length;
+                numerology += `「${gachaTitle}」のタイトルには${titleLength}文字のエネルギーが宿っており、`;
+            }
+            
+            if (targetName) {
+                const targetNumber = targetName.length;
+                numerology += `「${targetName}」の名前には${targetNumber}文字のエネルギーが宿っており、この数字を意識すると引き寄せ力が高まります。`;
+            } else {
+                numerology += 'この数字を意識してガチャを引くと良いでしょう。';
+            }
+            
+            divinations.push({ title: '🔢 数秘術', content: numerology });
+
+            // タロット
+            let tarot = '';
+            if (gachaTitle && targetName) {
+                tarot = `「${gachaTitle}」で「${targetName}」を求めるあなたには、タロットカード「運命の輪」と「恋人」が同時に出現。これは極めて稀な強運の暗示です。願いは必ず叶います。`;
+            } else if (targetName) {
+                tarot = `「${targetName}」を求めるあなたには、タロットカード「恋人」が出現。強い縁と引き寄せの力が働いています。願いが現実化する可能性が非常に高いです。`;
+            } else if (gachaTitle) {
+                tarot = `「${gachaTitle}」の期間、タロットカード「太陽」が輝いています。成功と喜びの暗示です。積極的に挑戦しましょう。`;
+            } else if (score >= 80) {
+                tarot = 'タロットカード「星」が示現。希望と幸運の暗示です。願いが叶う可能性が高まっています。';
+            } else {
+                tarot = 'タロットカード「運命の輪」が出現。変化のタイミングです。流れに身を任せることで良い結果が得られるでしょう。';
+            }
+            divinations.push({ title: '🎴 タロット占い', content: tarot });
+
+            // 東洋占星術
+            let eastern = '';
+            if (eto === '酉') {
+                eastern = '酉年の方は、今月は「桃花運」が強まる時期です。ガチャにおいても運命的な出会い（キャラクター）が期待できます。';
+            } else if (eto) {
+                eastern = `${eto}年の方は、今月の運気は上昇傾向にあります。特に午後の時間帯に良い運気が流れています。`;
+            } else {
+                eastern = '四柱推命によると、今月は「財運」と「桃花運」が高まる時期です。積極的な行動が吉を呼びます。';
+            }
+            
+            if (gachaTitle && targetName) {
+                eastern += `「${gachaTitle}」での「${targetName}」との縁は、天が定めた運命です。提示された時間に引けば、必ず手に入るでしょう。`;
+            } else if (targetName) {
+                eastern += `「${targetName}」との縁は天から定められたもの。諦めずに挑戦し続けることで、必ず手に入ります。`;
+            } else if (gachaTitle) {
+                eastern += `「${gachaTitle}」の期間は、天の恵みを受けやすい時期です。`;
+            }
+            
+            divinations.push({ title: '☯️ 東洋占星術', content: eastern });
+
+            // 血液型占い
+            const blood = bloodType 
+                ? `${bloodType}の方は、${getBloodTypeAdvice(bloodType)}`
+                : '血液型情報があれば、さらに詳細な鑑定が可能です。';
+            divinations.push({ title: '🩸 血液型占い', content: blood });
+
+            return divinations;
+        }
+
+        function getBloodTypeAdvice(bloodType) {
+            const advice = {
+                'A型': '慎重な性格が吉と出ます。計画的にガチャを引くことで、高レアリティを引き当てる可能性が高まります。',
+                'B型': '直感力が冴えています。「引きたい」と思った瞬間がベストタイミングです。迷わず行動しましょう。',
+                'O型': '大胆さが幸運を呼びます。思い切ってガチャに挑戦することで、予想以上の結果が得られるでしょう。',
+                'AB型': '独特の感性が武器です。他の人が引かない時間帯に引くことで、レアな結果を得やすくなります。'
+            };
+            return advice[bloodType] || '';
+        }
+
+        function generateLuckyNumber() {
+            const numbers = [3, 7, 8, 9, 11, 22, 33];
+            return numbers[Math.floor(Math.random() * numbers.length)];
+        }
+
+        function generateLuckyActions(score, targetName, gachaTitle) {
+            const actions = [
+                'ガチャを引く前に、深呼吸を3回してリラックスしましょう',
+                '画面を綺麗に拭いて、運気の通り道を整えましょう',
+                '好きな音楽を聴いて、ポジティブな気持ちを高めましょう',
+                '部屋の掃除をして、運気の流れを良くしましょう',
+                '神社やお寺の画像を見て、心を落ち着けましょう'
+            ];
+
+            if (score >= 85) {
+                actions.push('今は最高の運気です。自信を持ってガチャに臨みましょう');
+            }
+
+            if (gachaTitle && targetName) {
+                actions.push(`「${gachaTitle}」の「${targetName}」の名前を3回唱えてから引きましょう`);
+                actions.push(`「${targetName}」の画像を待ち受けにして、引き寄せパワーを高めましょう`);
+                actions.push(`「${gachaTitle}」のバナーを見つめて、イメージを強く持ちましょう`);
+            } else if (targetName) {
+                actions.push(`「${targetName}」の名前を3回唱えてから引きましょう`);
+                actions.push(`「${targetName}」の画像を待ち受けにして、引き寄せパワーを高めましょう`);
+            } else if (gachaTitle) {
+                actions.push(`「${gachaTitle}」の成功をイメージしながら引きましょう`);
+            }
+
+            return actions;
+        }
+
+        // PDF出力機能（シンプル版 - 推奨回数、候補、画像のみ）
+        async function downloadPDF() {
+            const result = JSON.parse(localStorage.getItem('lastGachaFortune'));
+            if (!result) {
+                alert('占い結果がありません。');
+                return;
+            }
+
+            try {
+                // シンプルな画像を生成
+                await generateSimpleImage(result);
+                
+            } catch (error) {
+                console.error('画像生成エラー:', error);
+                alert('画像生成に失敗しました。もう一度お試しください。');
+            }
+        }
+
+        // シンプルで見やすい画像を生成（女の子の画像を含む）
+        async function generateSimpleImage(result) {
+            // Canvasを作成
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 2200; // 女の子画像用にサイズ拡大
+            const ctx = canvas.getContext('2d');
+
+            // 背景色（紫のグラデーション）
+            const gradient = ctx.createLinearGradient(0, 0, 0, 2200);
+            gradient.addColorStop(0, '#E6D5E8');
+            gradient.addColorStop(1, '#FAF7FB');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1200, 2200);
+
+            // タイトル
+            ctx.fillStyle = '#8B4789';
+            ctx.font = 'bold 60px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🔮 ガチャ占い結果 🔮', 600, 80);
+
+            // ゲームタイトル
+            ctx.font = '32px sans-serif';
+            ctx.fillText(`${result.gameTitle}`, 600, 140);
+
+            // 区切り線
+            ctx.strokeStyle = '#8B4789';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(100, 180);
+            ctx.lineTo(1100, 180);
+            ctx.stroke();
+
+            // 推奨ガチャ回数
+            let y = 250;
+            ctx.fillStyle = '#8B4789';
+            ctx.font = 'bold 40px sans-serif';
+            ctx.fillText('💫 推奨ガチャ回数', 600, y);
+            y += 60;
+
+            ctx.font = 'bold 50px sans-serif';
+            ctx.fillStyle = '#FF6B6B';
+            ctx.fillText(`単発: ${result.recommendedPulls.single}回`, 300, y);
+            ctx.fillText(`10連: ${result.recommendedPulls.ten}回`, 750, y);
+            y += 60;
+            ctx.font = 'bold 45px sans-serif';
+            ctx.fillStyle = '#FFD700';
+            ctx.fillText(`合計: ${result.recommendedPulls.total}連`, 600, y);
+
+            // 区切り線
+            y += 40;
+            ctx.strokeStyle = '#8B4789';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(100, y);
+            ctx.lineTo(1100, y);
+            ctx.stroke();
+
+            // 5つの候補
+            y += 60;
+            ctx.fillStyle = '#8B4789';
+            ctx.font = 'bold 40px sans-serif';
+            ctx.fillText('⏰ 最適ガチャ時刻', 600, y);
+            y += 20;
+
+            result.luckyTimes.forEach((time, index) => {
+                y += 70;
+                
+                // 背景（候補ごとに色を変える）
+                const colors = ['#FFE4E1', '#FFF0F5', '#FFE4B5', '#E6F3FF', '#F0E6FF'];
+                ctx.fillStyle = colors[index];
+                ctx.fillRect(100, y - 50, 1000, 80);
+                
+                // 枠線
+                ctx.strokeStyle = '#8B4789';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(100, y - 50, 1000, 80);
+                
+                // テキスト
+                ctx.fillStyle = '#8B4789';
+                ctx.font = 'bold 35px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`第${time.rank}候補`, 130, y);
+                
+                ctx.font = '32px sans-serif';
+                ctx.fillText(`${time.date} ${time.time}`, 350, y);
+                
+                ctx.font = 'bold 30px sans-serif';
+                ctx.fillStyle = '#FF6B6B';
+                ctx.textAlign = 'right';
+                ctx.fillText(`${time.score}点`, 1050, y);
+                
+                // バッジ
+                if (time.special || time.urgent) {
+                    ctx.font = 'bold 24px sans-serif';
+                    ctx.fillStyle = '#FF4500';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(time.special ? '✨特別' : '🔥緊急', 1050, y + 25);
+                }
+            });
+
+            // 可愛い女の子の画像エリア
+            y += 120;
+            ctx.fillStyle = '#8B4789';
+            ctx.font = 'bold 40px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('✨ 幸運の女神 ✨', 600, y);
+            
+            y += 20;
+            
+            // 女の子の画像を読み込んで描画
+            if (result.girlImageUrl) {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                        img.src = result.girlImageUrl;
+                    });
+                    
+                    // 画像を中央に配置
+                    const imgWidth = 400;
+                    const imgHeight = 600;
+                    const imgX = (1200 - imgWidth) / 2;
+                    
+                    // 枠線
+                    ctx.strokeStyle = '#8B4789';
+                    ctx.lineWidth = 5;
+                    ctx.strokeRect(imgX, y, imgWidth, imgHeight);
+                    
+                    // 画像を描画
+                    ctx.drawImage(img, imgX, y, imgWidth, imgHeight);
+                    
+                    y += imgHeight + 20;
+                } catch (error) {
+                    console.log('画像読み込みエラー、フォールバック表示');
+                    // フォールバック: 絵文字表示
+                    ctx.fillStyle = '#FFE4E1';
+                    ctx.fillRect(300, y, 600, 400);
+                    ctx.strokeStyle = '#8B4789';
+                    ctx.lineWidth = 5;
+                    ctx.strokeRect(300, y, 600, 400);
+                    
+                    ctx.font = 'bold 150px sans-serif';
+                    ctx.fillStyle = '#8B4789';
+                    ctx.fillText('💖', 600, y + 220);
+                    
+                    ctx.font = 'bold 35px sans-serif';
+                    ctx.fillText('幸運の女神', 600, y + 300);
+                    
+                    y += 420;
+                }
+            }
+
+            // フッター
+            y += 30;
+            ctx.fillStyle = '#999';
+            ctx.font = '24px sans-serif';
+            ctx.fillText('Powered by クトちゃん 💫 全占術統合システム', 600, y);
+
+            // Canvasを画像としてダウンロード
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().split('T')[0];
+                link.download = `ガチャ占い結果_${result.gameTitle}_${timestamp}.png`;
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                alert('画像をダウンロードしました！');
+            });
+        }
+
+        // スクリプトを動的にロードする関数
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // リセット機能
+        function resetFortune() {
+            if (confirm('結果をリセットして新しく占い直しますか？\n（同じ条件でも違う結果が出ます）')) {
+                localStorage.removeItem('fixedGachaResult');
+                localStorage.removeItem('fixedGachaResultKey');
+                localStorage.removeItem('lastGachaFortune');
+                alert('リセットしました！もう一度占いフォームから入力してください。');
+                location.reload();
+            }
+        }
+
+        function displayResult(result) {
+            const resultDiv = document.getElementById('result');
+            
+            let html = `
+                <div class="lucky-time">
+                    <h2>🎯 ${result.gameTitle} の最適ガチャ時刻</h2>
+            `;
+
+            if (result.gachaTitle) {
+                html += `<div style="margin: 10px 0; font-size: 1.2rem; font-weight: 700; color: #FF6B6B;">📅 ${result.gachaTitle}</div>`;
+            }
+
+            if (result.gachaDeadline) {
+                const deadline = new Date(result.gachaDeadline);
+                const deadlineStr = `${deadline.getMonth() + 1}月${deadline.getDate()}日`;
+                const timeStr = result.gachaDeadlineTime || '23:59';
+                html += `<div style="margin: 10px 0; font-size: 1rem; color: #FF4500;">⏰ 期限: ${deadlineStr} ${timeStr}まで</div>`;
+            }
+
+            if (result.targetName) {
+                html += `<div style="margin: 15px 0; font-size: 1.1rem; font-weight: 600;">🎯 狙い: ${result.targetName}</div>`;
+            }
+
+            html += `<div class="score">総合運気: ${result.score}点</div>`;
+
+            // 推奨ガチャ回数を表示
+            html += `
+                <div style="background: rgba(255, 255, 255, 0.3); padding: 20px; border-radius: 10px; margin: 20px 0; backdrop-filter: blur(10px);">
+                    <h3 style="margin-bottom: 15px; font-size: 1.2rem;">💫 推奨ガチャ回数</h3>
+                    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.9rem; margin-bottom: 5px;">単発ガチャ</div>
+                            <div style="font-size: 2rem; font-weight: 700;">${result.recommendedPulls.single}回</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.9rem; margin-bottom: 5px;">10連ガチャ</div>
+                            <div style="font-size: 2rem; font-weight: 700;">${result.recommendedPulls.ten}回</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.9rem; margin-bottom: 5px;">合計</div>
+                            <div style="font-size: 2rem; font-weight: 700;">${result.recommendedPulls.total}連</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 過去の時間帯をフィルタリング
+            const now = new Date();
+            let validTimes = result.luckyTimes.filter(time => !time.passed);
+            
+            // 全て過去の場合は再計算が必要
+            if (validTimes.length === 0) {
+                html += `
+                    <div style="background: #FFF3CD; padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #FFA500;">
+                        <p style="color: #856404; margin: 0;">⚠️ 提示された時間が過ぎました。再度占いを実行してください。</p>
+                    </div>
+                `;
+                validTimes = result.luckyTimes; // 表示は全て表示
+            }
+
+            result.luckyTimes.forEach(time => {
+                let badges = '';
+                let timeStyle = '';
+                
+                if (time.passed) {
+                    badges += '<span style="background: #999; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; margin-left: 10px;">⏰終了</span>';
+                    timeStyle = 'opacity: 0.5;';
+                } else {
+                    if (time.special) {
+                        badges += '<span style="background: #FF4500; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; margin-left: 10px;">✨特別</span>';
+                    }
+                    if (time.urgent) {
+                        badges += '<span style="background: #DC143C; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; margin-left: 10px;">🔥緊急</span>';
+                    }
+                }
+                
+                html += `
+                    <div class="time-slot" style="${timeStyle}">
+                        <h3>第${time.rank}候補 ${badges}</h3>
+                        <p>${time.date} ${time.time}</p>
+                        <div style="margin-top: 10px; font-size: 0.9rem;">運気スコア: ${time.score}点</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            // 可愛い女の子の画像を表示（This Person Does Not Exist使用）
+            // 完全にランダムな人物を生成（実在しない）
+            const randomSeed = Date.now() + Math.floor(Math.random() * 100000);
+            
+            // This Person Does Not Exist API（完全無料・安定）
+            const imageUrl = `https://thispersondoesnotexist.com/?seed=${randomSeed}`;
+            
+            // 結果に画像URLを保存（ダウンロード用）
+            result.girlImageUrl = imageUrl;
+            result.girlImageSeed = randomSeed;
+            
+            html += `
+                <div class="lucky-girl">
+                    <h3>✨ 運気上昇中！幸運の女神があなたを見守っています ✨</h3>
+                    <div style="position: relative;">
+                        <img id="luckyGirlImage" src="${imageUrl}" alt="幸運の女神" loading="eager" crossorigin="anonymous"
+                             style="border-radius: 20px; box-shadow: 0 20px 60px rgba(139, 71, 137, 0.3); max-width: 100%; width: 400px; height: 400px; object-fit: cover; background: linear-gradient(135deg, #FFE4E1, #E6D5E8);">
+                        <button onclick="reloadGirlImage()" style="margin-top: 15px; padding: 10px 20px; background: linear-gradient(135deg, #8B4789, #D8BFD8); color: white; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 4px 15px rgba(139, 71, 137, 0.3);">
+                            🔄 別の女神を表示
+                        </button>
+                    </div>
+                    <p>この女神のような素敵な女性との出会いが、もうすぐ訪れます。<br>お守りを大切に、笑顔を忘れずに過ごしてください。</p>
+                </div>
+            `;
+            
+            // 画像再読み込み用の関数を追加
+            if (!window.reloadGirlImage) {
+                window.reloadGirlImage = function() {
+                    const img = document.getElementById('luckyGirlImage');
+                    if (img) {
+                        const newSeed = Date.now() + Math.floor(Math.random() * 100000);
+                        img.src = `https://thispersondoesnotexist.com/?seed=${newSeed}`;
+                        
+                        // 結果も更新
+                        const result = JSON.parse(localStorage.getItem('lastGachaFortune'));
+                        result.girlImageUrl = img.src;
+                        result.girlImageSeed = newSeed;
+                        localStorage.setItem('lastGachaFortune', JSON.stringify(result));
+                    }
+                };
+            }
+
+            result.divinations.forEach(div => {
+                html += `
+                    <div class="divination-section">
+                        <h3>${div.title}</h3>
+                        <p>${div.content}</p>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="lucky-action">
+                    <h3>✨ ガチャ前のラッキーアクション</h3>
+                    <ul>
+            `;
+
+            result.luckyActions.forEach(action => {
+                html += `<li>${action}</li>`;
+            });
+
+            html += `
+                    </ul>
+                </div>
+            `;
+
+            // 画像ダウンロードボタンを追加
+            html += `
+                <button class="download-pdf-btn" onclick="downloadPDF()">
+                    📸 この結果を画像でダウンロード
+                </button>
+            `;
+
+            // リセットボタンを追加
+            html += `
+                <button class="download-pdf-btn" onclick="resetFortune()" style="background: linear-gradient(135deg, #DC143C, #FF6347); margin-top: 15px;">
+                    🔄 結果をリセット（新しく占い直す）
+                </button>
+            `;
+
+            resultDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
